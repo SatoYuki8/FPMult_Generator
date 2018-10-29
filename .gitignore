@@ -1,0 +1,5 @@
+*.scr
+*.rb
+*.sfl
+ghdl
+ghdl/
