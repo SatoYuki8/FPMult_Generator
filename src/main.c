@@ -314,9 +314,11 @@ P_END
 	  "sel xmsb, ymsb;\n\n"
 	  "%s As, Aexp<%d>, Am1<%d>, Am2<%d>;\n"
 	  "%s Bs, Bexp<%d>, Bm<%d>;\n"
+	  "%s Cs, Cexp<%d>, Cm<%d>, carry;\n"
 	  "%s out<%d>;\n\n",
 	  frac,
 	  sel_or_reg, exp+1, frac+1, frac+1,
+	  sel_or_reg, exp+1, (frac+1)*2,
 	  sel_or_reg, exp+1, (frac+1)*2,
 	  sel_or_reg, width
 	  );
@@ -326,7 +328,8 @@ P_IF
   fprintf(fp,
 	  "stage_name A {task frac_mult(As, Aexp, Am1, Am2);}\n"
 	  "stage_name B {task normalize(Bs, Bexp, Bm);}\n"
-	  "stage_name C {task result(out);}\n\n"
+	  "stage_name C {task round(Cs, Cexp, Cm, carry);}\n"
+	  "stage_name D {task result(out);}\n\n"
 	  );
 P_END
 
@@ -372,7 +375,7 @@ P_ELSE
 	  );
 P_END
   
-  /* Multiplication */
+  /******************** Multiplication *********************/
 P_IF
   fprintf(fp,
 	  "stage A{\n"
@@ -394,49 +397,63 @@ P_ELSE
 	  );
 P_END
   
-  //Normalize, Round
+  /******************Normalize*********************/
 P_IF
   fprintf(fp,
 	  "stage B{\n"
 	  "par{\n"
+	  "relay C.round(Bs, Bexp, (Bm >> Bm<%d>), Bm<%d>);\n"
+	  "}\n"
+	  "}\n"
+	  "\n",
+	  (frac+1)*2 - 1, (frac+1)*2 - 1
+	  );
+P_ELSE
+  fprintf(fp,
+	  "Cs = Bs;\n"
+	  "Cexp = Bexp;\n"
+	  "Cm = Bm >> Bm<%d>;\n"
+	  "carry = Bm<%d>;\n"
+	  "\n",
+	  (frac+1)*2 - 1, (frac+1)*2 - 1
 	  );
 P_END
 
+  /********************Round**********************/
   char tmp[16];
 P_IF
-  strcpy(tmp, "relay C.result");
+  strcpy(tmp, "relay D.result");
+ fprintf(fp,
+	 "stage C{\n"
+	 "par{\n"
+	 );
 P_ELSE
   strcpy(tmp, "out = ");
 P_END
-  
+ 
   fprintf(fp,
 	  "alt{\n"
-	  "(^(/|Bm)): %s(%d#(0b0));\n"
-	  "else: par{\n"
-	  "alt{\n",
+	  "(^(/|Cm)): %s(%d#(0b0));\n"
+	  "else: par{\n",
 	  tmp, width
 	  );
+
   fprintf(fp,
-	  "(Bm<%d>): rounded_frac = incfrac.do((Bm<%d>&(Bm<%d>|Bm<%d>|(/|Bm<%d:0>))), Bm<%d:%d>).out;\n",
-	  ((frac+1)*2-1), frac, frac+1, frac-1, frac-2, ((frac+1)*2-2), frac+1
-	  );
-  fprintf(fp,
-	  "else: rounded_frac = incfrac.do((Bm<%d>&(Bm<%d>|Bm<%d>|(/|Bm<%d:0>))), Bm<%d:%d>).out;\n",
+	  "rounded_frac = incfrac.do((Cm<%d>&(Cm<%d>|Cm<%d>|(/|Cm<%d:0>))), Cm<%d:%d>).out;\n",
 	  frac-1, frac, frac-2, frac-3, ((frac+1)*2-3), frac
 	  );
   fprintf(fp,
-	  "}\n"
-	  "%s(Bs || (Bexp<%d:0> + Bm<%d> + incfrac.p) || rounded_frac);\n"
+	  "%s(Cs || (Cexp<%d:0> + carry + incfrac.p) || rounded_frac);\n"
 	  "}\n"
 	  "}\n",
-	  tmp, exp-1, ((frac+1)*2-1)
+	  tmp, exp-1
 	  );
 P_IF
   fprintf(fp,
 	  "}\n"
 	  "}\n"
 	  "\n"
-	  "stage C{\n"
+	  "stage D{\n"
 	  );
 P_END
   
