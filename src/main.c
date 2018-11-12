@@ -3,45 +3,24 @@
 #include <string.h>
 #include <math.h>
 
-#define ERROR 0
-
-/* exponation fraction bit_width */
-typedef struct exp_frac_width{
-  int exp;
-  int frac;
-  int width;  //exp + frac + sign
-} _efw_t;
-
-typedef _efw_t efw_t[1];
-
-/* Flag */
-typedef struct flags{
-  int wrapper_flag;
-  int module_flag;
-  int stdout_flag;
-  int filename_flag;
-  int non_DSP_flag;
-  int pipeline_flag;
-} _flags_t;
-
-typedef _flags_t flags_t[1];
-
-#define P_IF if(flag->pipeline_flag == 1){
-#define P_ELSE }else{
-#define P_END }
+#include "generator.h"
 
 /*************************************************/
 
 void init_flags(flags_t flag){
   flag->wrapper_flag = 0;
-  flag->module_flag = 0;
+  flag->fpmulti_flag = 0;
   flag->stdout_flag = 0;
   flag->filename_flag = 0;
   flag->non_DSP_flag = 0;
   flag->pipeline_flag = 0;
+  flag->step1_flag = 0;
+  flag->step2_flag = 0;
+  flag->step3_flag = 0;
+  flag->step4_flag = 0;
 }
 
-void start_message(){
+void help_message(){
   fprintf(stdout,
 	  "FPMulti Generator\n"
 	  "  ./gen fpmulti exp=<n> frac=<m>\n"
@@ -61,7 +40,7 @@ FILE *arg_check(int argc, char **argv, efw_t f, flags_t flag, char *module_name)
   int exp = 0, frac = 0;
 
   if (argc == 1) {
-    start_message();
+    help_message();
     //printf("argument taritenai\n");
     return ERROR;
   }
@@ -69,8 +48,14 @@ FILE *arg_check(int argc, char **argv, efw_t f, flags_t flag, char *module_name)
   /* 端末の引数をチェック */
   for(i=0 ; i<argc ; i++){
     //乗算モジュール
-    if(!strncmp(argv[i], "FPMult", 6)) flag->module_flag = 1;
-    if(!strncmp(argv[i], "fpmult", 6)) flag->module_flag = 1;
+    if(!strncmp(argv[i], "FPMult", 6)) flag->fpmulti_flag = 1;
+    if(!strncmp(argv[i], "fpmult", 6)) flag->fpmulti_flag = 1;
+
+    //step measurement
+    if(!strncmp(argv[i], "step1", 5)) flag->step1_flag = 1;
+    if(!strncmp(argv[i], "step2", 5)) flag->step2_flag = 1;
+    if(!strncmp(argv[i], "step3", 5)) flag->step3_flag = 1;
+    if(!strncmp(argv[i], "step4", 5)) flag->step4_flag = 1;
     
     //exp & frac substitution
     if(!strncmp(argv[i], "exp=", 4)) exp = atoi(argv[i]+4);
@@ -99,8 +84,15 @@ FILE *arg_check(int argc, char **argv, efw_t f, flags_t flag, char *module_name)
 
   //Bit width substitution
   if((exp<3) | (frac<4)){
-    fprintf(stderr, "Exponation or Fraction are irregularity.\n");
+    fprintf(stderr,
+	    "Exponation or Fraction are illegal.\n"
+	    "(Please input 2<exp<21, 3<frac)\n");
     return ERROR;
+  }else if(exp>20){
+    fprintf(stderr,
+	    "Exponation is too large.\n"
+	    "(Please input smaller than 21)\n");
+    return ERROR; 
   }else{    
     f->exp = exp;
     f->frac = frac;
@@ -108,8 +100,16 @@ FILE *arg_check(int argc, char **argv, efw_t f, flags_t flag, char *module_name)
   }
 
   //Module command
-  if(flag->module_flag == 1){
+  if(flag->fpmulti_flag == 1){
     sprintf(module_name, "FPMulti_%d_%d_%d", f->exp, f->frac, f->width);
+  }else if (flag->step1_flag == 1){
+    sprintf(module_name, "step1");
+  }else if (flag->step2_flag == 1){
+    sprintf(module_name, "step2");
+  }else if (flag->step3_flag == 1){
+    sprintf(module_name, "step3");
+  }else if (flag->step4_flag == 1){
+    sprintf(module_name, "step4");
   }else{
     fprintf(stderr, "Please input module type\n");
     return ERROR;
@@ -154,33 +154,28 @@ int IncFrac_Generator(FILE *fp, const int frac, char *name){
 
   //Module
   fprintf(fp,
-	  "module %s{\n"
+	  "circuit %s{\n"
 	  "input cin;\n"
 	  "input in<%d>;\n"
 	  "output out<%d>;\n"
 	  "output p;\n"
 	  "instrin do;\n"
-	  "sel cry<%d>;\n\n"
+	  "sel tmp<%d>;\n\n"
 	  "instruct do par{\n"
-	  "p = /&(in) & cin;\n",
+	  "tmp = (0b0||in) + cin;\n"
+	  "out = tmp<%d:0>;\n"
+	  "p = tmp<%d>;\n"
+	  "}\n}\n\n",
 	  name,
-	  frac, frac, frac
+	  frac, frac, frac+1,
+	  frac-1, frac
 	  );
-
-  int i;
-  for(i=0;i<frac;i++){
-    if(i==0) fprintf(fp, "cry = (/&(in<%d:0>) & cin)\n", frac-2);
-    else if(i==frac-1) fprintf(fp, "|| cin;\n");
-    else fprintf(fp, "|| (/&(in<%d:0>) & cin)\n",frac-i-2);
-  }
-  
-  fprintf(fp,
-	  "out = in @ cry;\n"
-	  "}\n}\n\n");
   
   return 1;
 }//end IncFrac_Gnerator
 
+/* 筆算アルゴリズムによる乗算    */
+/* SECONDSでのシュミレーション用 */
 int Long_Division(FILE *fp, const int frac, char *name){
   int mul_frac = frac + 1;
 
@@ -263,6 +258,7 @@ int Multiplier_Generator(FILE *fp, const int frac, flags_t flag, char *name){
 }//end Multiplier_Generator
 
 
+
 int FPMultiplier_Generator(FILE *fp, const efw_t f, flags_t flag, char *module_name){
   int exp = f->exp;
   int frac= f->frac;
@@ -276,7 +272,7 @@ int FPMultiplier_Generator(FILE *fp, const efw_t f, flags_t flag, char *module_n
   Multiplier_Generator(fp, frac, flag, multi_module);
   /**************/
 
-  /* Input, Output, Submodule */
+  /************ Input, Output, Submodule **************/
   fprintf(fp,
 	  "circuit %s{\n"
 	  "input a<%d>, b<%d>;\n"
@@ -295,20 +291,7 @@ P_IF
 P_END
   
   /* Sel declaration */
-  /*
-    fprintf(fp,
-    "sel sign;\n"
-    "sel exp<%d>;\n"
-    "sel out_frac<%d>;\n"
-    "sel rounded_frac<%d>;\n"
-    "sel z<%d>;\n\n"
-    "sel xmsb, ymsb;\n\n",
-    exp+1,
-    (frac+1)*2,
-    frac,
-    width
-    );
-  */
+
   fprintf(fp,
 	  "sel rounded_frac<%d>;\n"
 	  "sel xmsb, ymsb;\n\n"
@@ -448,6 +431,8 @@ P_END
 	  "}\n",
 	  tmp, exp-1
 	  );
+
+  /*********************** Result Output **************************/
 P_IF
   fprintf(fp,
 	  "}\n"
@@ -536,8 +521,14 @@ int Manage_FPMult_Generator(int argc, char **argv){
   if (fp == ERROR) return ERROR;
 
   /* FPMultiplier_generator */
-  FPMultiplier_Generator(fp, f, flag, module_name);
+  if (flag->fpmulti_flag == 1) FPMultiplier_Generator(fp, f, flag, module_name);
 
+  /* Step measurement */
+  if (flag->step1_flag == 1) step_measurement(fp, f, flag, module_name);
+  else if (flag->step2_flag == 1) step_measurement(fp, f, flag, module_name);
+  else if (flag->step3_flag == 1) step_measurement(fp, f, flag, module_name);
+  else if (flag->step4_flag == 1) step_measurement(fp, f, flag, module_name);
+  
   /* Wrapper Generator */
   if(flag->wrapper_flag == 1) Wrapper_Generator(fp, f, module_name);
   
