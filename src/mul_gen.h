@@ -45,14 +45,20 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module);
 //main.c
 void init_flags(flags_t flag);
 void help_message();
+int Wrapper_Generator(FILE *fp, const efw_t f, char *module_name);
+int Manage_FPMult_Generator(int argc, char **argv);
+
 FILE *arg_check(int argc, char **argv, efw_t f, flags_t flag, char *module_name);
 int IncFrac_Generator(FILE *fp, const int frac, char *name);
 int Long_Division(FILE *fp, const int frac, char *name);
 int Multiplier_Generator(FILE *fp, const int frac, flags_t flag, char *name);
 int FPMultiplier_Generator(FILE *fp, const efw_t f, flags_t flag, char *module_name);
-int Wrapper_Generator(FILE *fp, const efw_t f, char *module_name);
-int Manage_FPMult_Generator(int argc, char **argv);
 
+int fpmulti_sel_declaration(FILE *fp, int exp, int frac, int width, flags_t flag, char *sel_or_reg);
+int fpmulti_signxor_expadd(FILE *fp, int exp, int frac, int width, flags_t flag);
+int fpmulti_fracmult(FILE *fp, flags_t flag);
+int fpmulti_normalize(FILE *fp, int exp, int frac, flags_t flag);
+int fpmulti_round(FILE *fp, int frac, flags_t flag);
 
 
 #endif

@@ -1,5 +1,8 @@
 *.scr
 *.rb
 *.sfl
+*.result
+*.o
 ghdl
 ghdl/
+tmp/
