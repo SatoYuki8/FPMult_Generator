@@ -17,7 +17,7 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
 	    "circuit %s{\n"
 	    "input a<%d>, b<%d>;\n"
 	    "output  As, Aexp<%d>, Am1<%d>, Am2<%d>;\n"
-	    "instrin do;\n"
+	    "instrin do_in;\n"
 	    "sel xmsb, ymsb;\n\n"
 	    "sel added_exp<%d>;\n"
 	    "\n",
@@ -28,7 +28,7 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
 	    );
 
     fprintf(fp,
-	    "instruct do par{\n"
+	    "instruct do_in par{\n"
 	    );
 
     fpmulti_signxor_expadd(fp, exp, frac, width, flag);
@@ -40,22 +40,22 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
     fprintf(fp,
 	    "declare %s{\n"
 	    "input a<%d>, b<%d>;\n"
-	    "instrin do;\n"
+	    "instrin do_in;\n"
 	    "output As, Aexp<%d>, Am1<%d>, Am2<%d>;\n"
-	    "instr_arg do(a, b);\n"
+	    "instr_arg do_in(a, b);\n"
 	    "}\n"
 	    "module wrapper{\n"
 	    "   input a<%d>, b<%d>;\n"
-	    "  instrin do;\n"
+	    "  instrin do_in;\n"
 	    " output As, Aexp<%d>, Am1<%d>, Am2<%d>;\n"
 	    "%s step;\n"
 	    "reg_wr ina<%d>, inb<%d>;\n"
 	    "reg_wr as, aexp<%d>, am1<%d>, am2<%d>;\n"
 	  
-	    "instruct do par{\n"
+	    "instruct do_in par{\n"
 	    "	ina := a;\n"
 	    "	inb := b;\n"
-	    "	step.do(ina, inb);\n"
+	    "	step.do_in(ina, inb);\n"
 	    "	as :=step.As;\n"
 	    "	aexp := step.Aexp;\n"
 	    "	am1:=step.Am1;\n"
@@ -76,83 +76,92 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
 	    exp, frac+1, frac+1	  
 	    );
   }else if(flag->step2_flag == 1){
+    char multi_module[64];
+    Multiplier_Generator(fp, frac, flag, multi_module);
+
     fprintf(fp,
 	    "circuit %s{\n"
-	    "    instrin do;\n"
-	    
+	    "    instrin do_in;\n"
+	    "    %s multi;\n"
 	    "    input As, Aexp<%d>, Am1<%d>, Am2<%d>;\n"
-	    "    output Bs, Be<%d>, Bm<%d>;\n"
-	    	    
-	    "    instruct do par{	\n"
-	    "	Bs = As;\n"
-	    "	Be = Aexp;\n"
-	    "	Bm = Am1 * Am2;\n"
+	    "    output Bs, Bexp<%d>, Bm<%d>, Bsticky;\n",
+	    module,
+	    multi_module,
+	    exp, frac+1, frac+1,
+	    exp, frac+3	    
+	    );
+    fprintf(fp,
+	    "    instruct do_in par{	\n"
+	    );
+
+    fpmulti_fracmult(fp, exp, frac, flag);
+    
+    fprintf(fp,
 	    "    }\n"
 	    "}\n"
 	    
 	    "declare %s{\n"
-	    "    instrin do;\n"
+	    "    instrin do_in;\n"
 	    
 	    "    input As, Aexp<%d>, Am1<%d>, Am2<%d>;\n"
-	    "    output Bs, Be<%d>, Bm<%d>;\n"
+	    "    output Bs, Bexp<%d>, Bm<%d>, Bsticky;\n"
 	    
-	    "    instr_arg do(As, Aexp, Am1, Am2);\n"
+	    "    instr_arg do_in(As, Aexp, Am1, Am2);\n"
 	    "}\n"
 	    
 	    "module wrapper{\n"
 	    "    input As, Aexp<%d>, Am1<%d>, Am2<%d>;\n"
-	    "    output Bs, Be<%d>, Bm<%d>;\n"
-	    "    instrin do;\n"
+	    "    output Bs, Bexp<%d>, Bm<%d>, Bsticky;\n"
+	    "    instrin do_in;\n"
 	    
 	    "    %s step;\n"
 	    
 	    "    reg_wr as, aexp<%d>, am1<%d>, am2<%d>;\n"
-	    "    reg_wr bs, be<%d>, bm<%d>;\n"
+	    "    reg_wr bs, bexp<%d>, bm<%d>, bsticky;\n"
 	    
-	    "    instruct do par{\n"
+	    "    instruct do_in par{\n"
 	    "	as := As;\n"
 	    "	aexp := Aexp;\n"
 	    "	am1:= Am1;\n"
 	    "	am2:= Am2;\n"
-	    "	step.do(as, aexp, am1, am2);\n"
+	    "	step.do_in(as, aexp, am1, am2);\n"
 	    "	bs := step.Bs;\n"
-	    "	be := step.Be;\n"
+	    "	bexp := step.Bexp;\n"
 	    "	bm := step.Bm;\n"
+	    "   bsticky:=step.Bsticky;\n"
 	    "	Bs = bs;\n"
-	    "	Be = be;\n"
+	    "	Bexp = bexp;\n"
 	    "	Bm = bm;\n"
+	    "   Bsticky = bsticky;\n"
 	    "    }\n"
 	    "}\n"
 	    "\n",
 	    module,
 	    exp, frac+1, frac+1,
-	    exp, (frac+1)*2,
+	    exp, frac+3,
+	    exp, frac+1, frac+1,
+	    exp, frac+3,
 	    module,
 	    exp, frac+1, frac+1,
-	    exp, (frac+1)*2,
-	    exp, frac+1, frac+1,
-	    exp, (frac+1)*2,
-	    module,
-	    exp, frac+1, frac+1,
-	    exp, (frac+1)*2
+	    exp, frac+3
 
 	    );
     
   }else if(flag->step3_flag == 1){
     fprintf(fp,
 	    "circuit %s{\n"
-	    "    instrin do;\n"
+	    "    instrin do_in;\n"
 
-	    "    input Bs, Bexp<%d>, Bm<%d>;\n"
+	    "    input Bs, Bexp<%d>, Bm<%d>, Bsticky;\n"
 	    "    output Cs, Cexp<%d>, Cm<%d>;\n"
 
 	    "    sel normalized_frac<%d>;\n"
 	    "    sel sticky;\n"
-	    "    instruct do	par{\n",	    
+	    "    instruct do_in	par{\n",	    
 	    module,
-	    exp, (frac+1)*2,
 	    exp, frac+3,
-	    (frac+1)*2
+	    exp, frac+3,
+	    frac+3
 	    );
     
     fpmulti_normalize(fp, exp, frac, flag);
@@ -163,30 +172,31 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
     
     fprintf(fp,
 	    "declare %s{\n"
-	    "    instrin do;\n"
+	    "    instrin do_in;\n"
 
-	    "    input Bs, Bexp<%d>, Bm<%d>;\n"
+	    "    input Bs, Bexp<%d>, Bm<%d>, Bsticky;\n"
 	    "    output Cs, Cexp<%d>, Cm<%d>;\n"
 
-	    "    instr_arg do(Bs, Bexp, Bm);\n"
+	    "    instr_arg do_in(Bs, Bexp, Bm, Bsticky);\n"
 	    "}\n"
 
 	    "module wrapper{\n"
-	    "    instrin do;\n"
+	    "    instrin do_in;\n"
 
-	    "    input Bs, Bexp<%d>, Bm<%d>;\n"
+	    "    input Bs, Bexp<%d>, Bm<%d>, Bsticky;\n"
 	    "    output Cs, Cexp<%d>, Cm<%d>;\n"
 
 	    "    %s step;\n"
 
-	    "    reg_wr bs, bexp<%d>, bm<%d>;\n"
+	    "    reg_wr bs, bexp<%d>, bm<%d>, bsticky;\n"
 	    "    reg_wr cs, cexp<%d>, cm<%d>;\n"
 
-	    "    instruct do par{\n"
+	    "    instruct do_in par{\n"
 	    "	bs:=Bs;\n"
 	    "	bexp:=Bexp;\n"
 	    "	bm:=Bm;\n"
-	    "	step.do(bs, bexp, bm);\n"
+	    "   bsticky:=Bsticky;\n"
+	    "	step.do_in(bs, bexp, bm, bsticky);\n"
 	    "	cs:=step.Cs;\n"
 	    "	cexp:=step.Cexp;\n"
 	    "	cm:=step.Cm;\n"
@@ -196,12 +206,12 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
 	    "    }\n"
 	    "}\n",
 	    module,
-	    exp, (frac+1)*2,
 	    exp, frac+3,
-	    exp, (frac+1)*2,
+	    exp, frac+3,
+	    exp, frac+3,
 	    exp, frac+3,
 	    module,
-	    exp, (frac+1)*2,
+	    exp, frac+3,
 	    exp, frac+3
 	    );
     
@@ -211,7 +221,7 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
     IncFrac_Generator(fp, frac, incfrac);
     fprintf(fp,
 	    "circuit %s{\n"
-	    "    instrin do;\n"
+	    "    instrin do_in;\n"
 	    
 	    "    %s incfrac;\n"
 	    
@@ -219,11 +229,11 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
 	    
 	    "    input Cs, Cexp<%d>, Cm<%d>;\n"
 	    "    output out<%d>;\n"
-	    "    instruct do par{\n",
+	    "    instruct do_in par{\n",
 	    module,
 	    incfrac,
 	    frac,
-	    exp+1, frac+3,
+	    exp, frac+3,
 	    width
 	    );
 
@@ -235,14 +245,14 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
 	    );
     fprintf(fp,
 	    "declare %s{\n"
-	    "    instrin do;\n"
+	    "    instrin do_in;\n"
 	    "    input Cs, Cexp<%d>, Cm<%d>;\n"
 	    "    output out<%d>;\n"
-	    "    instr_arg do(Cs, Cexp, Cm);\n"
+	    "    instr_arg do_in(Cs, Cexp, Cm);\n"
 	    "}\n"
 	    
 	    "module wrapper{\n"
-	    "    instrin do;\n"
+	    "    instrin do_in;\n"
 	    "    input Cs, Cexp<%d>, Cm<%d>;\n"
 	    "    output out<%d>;\n"
 
@@ -251,11 +261,11 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
 	    "    reg_wr cs, cexp<%d>, cm<%d>;\n"
 	    "    reg_wr z<%d>;\n"
 	    
-	    "    instruct do par{\n"
+	    "    instruct do_in par{\n"
 	    "	cs:=Cs;\n"
 	    "	cexp:=Cexp;\n"
 	    "	cm:=Cm;\n"
-	    "	z:=step.do(cs, cexp, cm).out;\n"
+	    "	z:=step.do_in(cs, cexp, cm).out;\n"
 	    "	out = z;\n"
 	    "    }\n"
 	    "}\n",

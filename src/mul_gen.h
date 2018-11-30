@@ -56,7 +56,7 @@ int FPMultiplier_Generator(FILE *fp, const efw_t f, flags_t flag, char *module_n
 
 int fpmulti_sel_declaration(FILE *fp, int exp, int frac, int width, flags_t flag, char *sel_or_reg);
 int fpmulti_signxor_expadd(FILE *fp, int exp, int frac, int width, flags_t flag);
-int fpmulti_fracmult(FILE *fp, flags_t flag);
+int fpmulti_fracmult(FILE *fp, int exp, int frac, flags_t flag);
 int fpmulti_normalize(FILE *fp, int exp, int frac, flags_t flag);
 int fpmulti_round(FILE *fp, int frac, flags_t flag);
 

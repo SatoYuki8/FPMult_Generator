@@ -43,8 +43,8 @@ int Wrapper_Generator(FILE *fp, const efw_t f, char *module_name){
 	  "declare %s{\n"
 	  "input a<%d>, b<%d>;\n"
 	  "output result<%d>;\n"
-	  "instrin do;\n"
-	  "instr_arg do(a, b);\n"
+	  "instrin do_in;\n"
+	  "instr_arg do_in(a, b);\n"
 	  "}\n\n",
 	  module_name,
 	  width, width,
@@ -57,15 +57,15 @@ int Wrapper_Generator(FILE *fp, const efw_t f, char *module_name){
 	  "module wrapper{\n"
 	  "input a<%d>, b<%d>;\n"
 	  "output result<%d>;\n"
-	  "instrin do;\n"
+	  "instrin do_in;\n"
 	  "%s fmulti;\n"
 	  "reg_wr ina<%d>;\n"
 	  "reg_wr inb<%d>;\n"
 	  "reg_wr out<%d>;\n"
-	  "instruct do par{\n"
+	  "instruct do_in par{\n"
 	  "ina:=a;\n"
 	  "inb:=b;\n"
-	  "out:=fmulti.do(ina, inb).result;\n"
+	  "out:=fmulti.do_in(ina, inb).result;\n"
 	  "result = out;\n"
 	  "}\n"
 	  "}\n\n",

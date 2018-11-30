@@ -10,8 +10,8 @@ int IncFrac_Generator(FILE *fp, const int frac, char *name){
 	  "input in<%d>;\n"
 	  "output out<%d>;\n"
 	  "output p;\n"
-	  "instrin do;\n"
-	  "instr_arg do(cin, in);\n"
+	  "instrin do_in;\n"
+	  "instr_arg do_in(cin, in);\n"
 	  "}\n\n",
 	  name,
 	  frac, frac
@@ -24,9 +24,9 @@ int IncFrac_Generator(FILE *fp, const int frac, char *name){
 	  "input in<%d>;\n"
 	  "output out<%d>;\n"
 	  "output p;\n"
-	  "instrin do;\n"
+	  "instrin do_in;\n"
 	  "sel tmp<%d>;\n\n"
-	  "instruct do par{\n"
+	  "instruct do_in par{\n"
 	  "tmp = (0b0||in) + cin;\n"
 	  "out = tmp<%d:0>;\n"
 	  "p = tmp<%d>;\n"
@@ -49,7 +49,7 @@ int Long_Division(FILE *fp, const int frac, char *name){
 	  "input       in1<%d> ;\n"
 	  "input       in2<%d> ;\n"
 	  "output      out<%d> ;\n"
-	  "instrin     do;",
+	  "instrin     do_in;",
 	  name,
 	  mul_frac, mul_frac, mul_frac*2
 	  );
@@ -60,7 +60,7 @@ int Long_Division(FILE *fp, const int frac, char *name){
     fprintf(fp, "sel tmp%d<%d>;\n", i, mul_frac*2);
   }
 
-  fprintf(fp, "\ninstruct do par{\n");
+  fprintf(fp, "\ninstruct do_in par{\n");
   //long division
   fprintf(fp, "tmp0 = (%3d#(0b0)||in1           ) & (%d # in2<  0>);\n",mul_frac, mul_frac*2);
   for(i=1;i<mul_frac;i++){
@@ -88,8 +88,8 @@ int Multiplier_Generator(FILE *fp, const int frac, flags_t flag, char *name){
 	  "input in1<%d>;\n"
 	  "input in2<%d> ;\n"
 	  "output out<%d> ;\n"
-	  "instrin do ;\n"
-	  "instr_arg do(in1,in2) ;\n"
+	  "instrin do_in ;\n"
+	  "instr_arg do_in(in1,in2) ;\n"
 	  "}\n\n",
 	  name,
 	  mul_frac,
@@ -109,8 +109,8 @@ int Multiplier_Generator(FILE *fp, const int frac, flags_t flag, char *name){
 	  "input in1<%d>;\n"
 	  "input in2<%d> ;\n"
 	  "output out<%d> ;\n"
-	  "instrin do ;\n\n"
-	  "instruct do out = in1 * in2;\n"
+	  "instrin do_in ;\n\n"
+	  "instruct do_in out = in1 * in2;\n"
 	  "}\n\n",
 	  name,
 	  mul_frac,

@@ -8,14 +8,14 @@ int fpmulti_sel_declaration(FILE *fp, int exp, int frac, int width, flags_t flag
 	  "sel sticky;\n"
 	  "sel normalized_frac<%d>;\n"
 	  "%s As, Aexp<%d>, Am1<%d>, Am2<%d>;\n"
-	  "%s Bs, Bexp<%d>, Bm<%d>;\n"
+	  "%s Bs, Bexp<%d>, Bm<%d>, Bsticky;\n"
 	  "%s Cs, Cexp<%d>, Cm<%d>;\n"
 	  "%s out<%d>;\n\n",
 	  frac,
 	  exp+1,
-	  (frac+1)*2,
+	  frac+3,
 	  sel_or_reg, exp, frac+1, frac+1,
-	  sel_or_reg, exp, (frac+1)*2,
+	  sel_or_reg, exp, frac+3,
 	  sel_or_reg, exp, frac+3,
 	  sel_or_reg, width
 	  );
@@ -24,7 +24,7 @@ P_IF
   /* stage_name declaration */
   fprintf(fp,
 	  "stage_name A {task frac_mult(As, Aexp, Am1, Am2);}\n"
-	  "stage_name B {task normalize(Bs, Bexp, Bm);}\n"
+	  "stage_name B {task normalize(Bs, Bexp, Bm, Bsticky);}\n"
 	  "stage_name C {task round(Cs, Cexp, Cm);}\n"
 	  "stage_name D {task result(out);}\n\n"
 	  );
@@ -82,25 +82,31 @@ P_END
 }// end fpmulti_signxor_expadd
 
 
-int fpmulti_fracmult(FILE *fp, flags_t flag){
+int fpmulti_fracmult(FILE *fp, int exp, int frac, flags_t flag){
 P_IF
   fprintf(fp,
 	  "stage A{\n"
 	  "par {\n"
 	  "relay B.normalize(As,\n"
 	  "Aexp,\n"
-	  "multi.do(Am1, Am2).out\n"
+	  "multi.do_in(Am1, Am2).out<%d:%d>,\n"
+	  "/|multi.out<%d:0>\n"
 	  ");\n"
 	  "}\n"
 	  "}\n"
-	  "\n"
+	  "\n",
+	  (frac+1)*2 - 1, frac - 1,
+	  frac - 2
 	  );
 P_ELSE
   fprintf(fp,
 	  "Bs = As;\n"
 	  "Bexp = Aexp;\n"
-	  "Bm = multi.do(Am1, Am2).out;\n"
-	  "\n"
+	  "Bm = multi.do_in(Am1, Am2).out<%d:%d>;\n"
+	  "Bsticky = /|multi.out<%d:0>;\n"
+	  "\n",
+	  (frac+1)*2 - 1, frac - 1,
+	  frac - 2
 	  );
 P_END
   
@@ -117,22 +123,22 @@ P_IF
 	  "(^(/|Bm<%d:%d>)): par{\n"
 	  "relay C. round(0b0, %d#0b0, %d#0b0);\n"
 	  "}\n",
-	  (frac+1)*2 - 1, (frac+1)*2 - 2,
+	  frac+2, frac+1,
 	  exp, frac+3
 	  );
  fprintf(fp,
 	 "else: par{\n"
 	 "normalized_frac = Bm >> Bm<%d>;\n"
-	 "sticky = /|Bm<%d:0> | (Bm<%d>&Bm<%d>);\n"
-	 "relay C.round(Bs, Bexp + Bm<%d>, normalized_frac<%d:%d> || sticky);\n"
+	 "sticky = Bsticky | (Bm<%d>&Bm<0>);\n"
+	 "relay C.round(Bs, Bexp + Bm<%d>, normalized_frac<%d:0> || sticky);\n"
 	 "}\n"
 	 "}\n"
 	 "}\n"
 	 "}\n"
 	 "\n",
-	 (frac+1)*2 - 1,
-	 frac-3, (frac+1)*2 - 1, frac-2,
-	 (frac+1)*2 - 1, (frac+1)*2 - 3, frac-2
+	 frac+2,
+	 frac+2,
+	 frac+2, frac+1
 	 );
 P_ELSE
   fprintf(fp,
@@ -140,21 +146,20 @@ P_ELSE
 	  "(^(/|Bm<%d:%d>)): par{\n"
 	  "Cs = 0b0; Cexp =  %d#0b0; Cm = %d#0b0;\n"
 	  "}\n",
-	  (frac+1)*2 - 1, (frac+1)*2 - 2,
+	  frac+2, frac+1,
 	  exp, frac+3
 	  );
  fprintf(fp,
 	 "else: par{\n"
 	 "normalized_frac = Bm >> Bm<%d>;\n"
-	 "sticky = /|Bm<%d:0> | (Bm<%d>&Bm<%d>);\n"
-	 "Cs = Bs; Cexp = Bexp + Bm<%d>; Cm = normalized_frac<%d:%d> || sticky;\n"
+	 "sticky = Bsticky | (Bm<%d>&Bm<0>);\n"
+	 "Cs = Bs; Cexp = Bexp + Bm<%d>; Cm = normalized_frac<%d:0> || sticky;\n"
 	 "}\n"
 	 "}\n"
 	 "\n",
-	 (frac+1)*2 - 1,
-	 frac-3, (frac+1)*2 - 1, frac-2,
-	 (frac+1)*2 - 1, (frac+1)*2 - 3, frac-2
-	 );
+	 frac+2,
+	 frac+2,
+	 frac+2, frac+1	 );
 P_END
 
   return 1;
@@ -174,7 +179,7 @@ P_END
   
 
   fprintf(fp,
-	  "rounded_frac = incfrac.do((Cm<2>&(Cm<3>|Cm<1>|Cm<0>)), Cm<%d:3>).out;\n",
+	  "rounded_frac = incfrac.do_in((Cm<2>&(Cm<3>|Cm<1>|Cm<0>)), Cm<%d:3>).out;\n",
 	  frac+2
 	  );
   fprintf(fp,
@@ -203,7 +208,7 @@ int FPMultiplier_Generator(FILE *fp, const efw_t f, flags_t flag, char *module_n
 	  "circuit %s{\n"
 	  "input a<%d>, b<%d>;\n"
 	  "output result<%d>;\n"
-	  "instrin do;\n\n"
+	  "instrin do_in;\n\n"
 	  "%s multi;\n"
 	  "%s incfrac;\n\n",
 	  module_name,
@@ -221,12 +226,12 @@ P_END
   
   /*********************************************************************/
   /************************* step1 *****************************/
- fprintf(fp, "instruct do par{\n");
+ fprintf(fp, "instruct do_in par{\n");
  
  fpmulti_signxor_expadd(fp, exp, frac, width, flag);
  
  /******************** Multiplication *********************/
- fpmulti_fracmult(fp, flag);
+ fpmulti_fracmult(fp, exp, frac, flag);
  
  /******************Normalize*********************/
  fpmulti_normalize(fp, exp, frac, flag);
