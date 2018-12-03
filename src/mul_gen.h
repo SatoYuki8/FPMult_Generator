@@ -58,7 +58,7 @@ int fpmulti_sel_declaration(FILE *fp, int exp, int frac, int width, flags_t flag
 int fpmulti_signxor_expadd(FILE *fp, int exp, int frac, int width, flags_t flag);
 int fpmulti_fracmult(FILE *fp, int exp, int frac, flags_t flag);
 int fpmulti_normalize(FILE *fp, int exp, int frac, flags_t flag);
-int fpmulti_round(FILE *fp, int frac, flags_t flag);
+int fpmulti_round(FILE *fp, int frac, int width, flags_t flag);
 
 
 #endif

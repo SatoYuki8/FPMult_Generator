@@ -138,12 +138,12 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
 	    "\n",
 	    module,
 	    exp, frac+1, frac+1,
-	    exp, frac+3,
+	    exp, frac+4,
 	    exp, frac+1, frac+1,
-	    exp, frac+3,
+	    exp, frac+4,
 	    module,
 	    exp, frac+1, frac+1,
-	    exp, frac+3
+	    exp, frac+4
 
 	    );
     
@@ -159,9 +159,9 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
 	    "    sel sticky;\n"
 	    "    instruct do_in	par{\n",	    
 	    module,
-	    exp, frac+3,
-	    exp, frac+3,
-	    frac+3
+	    exp, frac+4,
+	    exp, frac+4,
+	    frac+4
 	    );
     
     fpmulti_normalize(fp, exp, frac, flag);
@@ -206,13 +206,13 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
 	    "    }\n"
 	    "}\n",
 	    module,
-	    exp, frac+3,
-	    exp, frac+3,
-	    exp, frac+3,
-	    exp, frac+3,
+	    exp, frac+4,
+	    exp, frac+4,
+	    exp, frac+4,
+	    exp, frac+4,
 	    module,
-	    exp, frac+3,
-	    exp, frac+3
+	    exp, frac+4,
+	    exp, frac+4
 	    );
     
   }else if(flag->step4_flag == 1){
@@ -233,11 +233,11 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
 	    module,
 	    incfrac,
 	    frac,
-	    exp, frac+3,
+	    exp, frac+4,
 	    width
 	    );
 
-    fpmulti_round(fp, frac, flag);
+    fpmulti_round(fp, frac, width, flag);
     
     fprintf(fp,
 	    "}\n"
@@ -270,12 +270,12 @@ int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
 	    "    }\n"
 	    "}\n",
 	    module,
-	    exp, frac+3,
+	    exp, frac+4,
 	    width,
-	    exp, frac+3,
+	    exp, frac+4,
 	    width,
 	    module,
-	    exp, frac+3,
+	    exp, frac+4,
 	    width
 	    );
   }

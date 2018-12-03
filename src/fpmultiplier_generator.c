@@ -8,15 +8,15 @@ int fpmulti_sel_declaration(FILE *fp, int exp, int frac, int width, flags_t flag
 	  "sel sticky;\n"
 	  "sel normalized_frac<%d>;\n"
 	  "%s As, Aexp<%d>, Am1<%d>, Am2<%d>;\n"
-	  "%s Bs, Bexp<%d>, Bm<%d>, Bsticky;\n"
+	  "%s Bs, Bexp<%d>, Bm<%d>, Bsticky<%d>;\n"
 	  "%s Cs, Cexp<%d>, Cm<%d>;\n"
 	  "%s out<%d>;\n\n",
 	  frac,
 	  exp+1,
-	  frac+3,
+	  frac+4,
 	  sel_or_reg, exp, frac+1, frac+1,
-	  sel_or_reg, exp, frac+3,
-	  sel_or_reg, exp, frac+3,
+	  sel_or_reg, exp, frac+4,
+	  sel_or_reg, exp, frac+4,
 	  sel_or_reg, width
 	  );
 
@@ -95,8 +95,8 @@ P_IF
 	  "}\n"
 	  "}\n"
 	  "\n",
-	  (frac+1)*2 - 1, frac - 1,
-	  frac - 2
+	  (frac+1)*2 - 1, frac - 2,
+	  frac - 3
 	  );
 P_ELSE
   fprintf(fp,
@@ -105,8 +105,8 @@ P_ELSE
 	  "Bm = multi.do_in(Am1, Am2).out<%d:%d>;\n"
 	  "Bsticky = /|multi.out<%d:0>;\n"
 	  "\n",
-	  (frac+1)*2 - 1, frac - 1,
-	  frac - 2
+	  (frac+1)*2 - 1, frac - 2,
+	  frac - 3
 	  );
 P_END
   
@@ -119,53 +119,33 @@ P_IF
   fprintf(fp,
 	  "stage B{\n"
 	  "par{\n"
-	  "alt{\n"
-	  "(^(/|Bm<%d:%d>)): par{\n"
-	  "relay C. round(0b0, %d#0b0, %d#0b0);\n"
-	  "}\n",
-	  frac+2, frac+1,
-	  exp, frac+3
 	  );
  fprintf(fp,
-	 "else: par{\n"
 	 "normalized_frac = Bm >> Bm<%d>;\n"
 	 "sticky = Bsticky | (Bm<%d>&Bm<0>);\n"
 	 "relay C.round(Bs, Bexp + Bm<%d>, normalized_frac<%d:0> || sticky);\n"
 	 "}\n"
 	 "}\n"
-	 "}\n"
-	 "}\n"
 	 "\n",
-	 frac+2,
-	 frac+2,
-	 frac+2, frac+1
+	 frac+3,
+	 frac+3,
+	 frac+3, frac+2
 	 );
 P_ELSE
-  fprintf(fp,
-	  "alt{\n"
-	  "(^(/|Bm<%d:%d>)): par{\n"
-	  "Cs = 0b0; Cexp =  %d#0b0; Cm = %d#0b0;\n"
-	  "}\n",
-	  frac+2, frac+1,
-	  exp, frac+3
-	  );
  fprintf(fp,
-	 "else: par{\n"
 	 "normalized_frac = Bm >> Bm<%d>;\n"
 	 "sticky = Bsticky | (Bm<%d>&Bm<0>);\n"
 	 "Cs = Bs; Cexp = Bexp + Bm<%d>; Cm = normalized_frac<%d:0> || sticky;\n"
-	 "}\n"
-	 "}\n"
 	 "\n",
-	 frac+2,
-	 frac+2,
-	 frac+2, frac+1	 );
+	 frac+3,
+	 frac+3,
+	 frac+3, frac+2	 );
 P_END
 
   return 1;
 }
 
-int fpmulti_round(FILE *fp, int frac, flags_t flag){
+int fpmulti_round(FILE *fp, int frac, int width, flags_t flag){
   char tmp[16];
 P_IF
   strcpy(tmp, "relay D.result");
@@ -177,15 +157,25 @@ P_ELSE
   strcpy(tmp, "out = ");
 P_END
   
-
+  fprintf(fp,
+	  "alt{\n"
+	  "(Cm<%d>|Cm<%d>): par{\n",
+	  frac + 3, frac + 2
+	  );
   fprintf(fp,
 	  "rounded_frac = incfrac.do_in((Cm<2>&(Cm<3>|Cm<1>|Cm<0>)), Cm<%d:3>).out;\n",
 	  frac+2
 	  );
   fprintf(fp,
-	  "%s(Cs || (Cexp + incfrac.p) || rounded_frac);\n",
+	  "%s(Cs || (Cexp + incfrac.p) || rounded_frac);\n"
+	  "}\n",
 	  tmp 
 	  );  
+  fprintf(fp,
+	  "else: %s(%d#0b0);\n"
+	  "}\n",
+	  tmp, width
+	  );
   
   return 1;
 }
@@ -237,7 +227,7 @@ P_END
  fpmulti_normalize(fp, exp, frac, flag);
  
  /********************Round**********************/
- fpmulti_round(fp, frac, flag);
+ fpmulti_round(fp, frac, width, flag);
  
  /*********************** Result Output **************************/
 P_IF
