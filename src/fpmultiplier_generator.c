@@ -15,7 +15,7 @@ int fpmulti_sel_declaration(FILE *fp, int exp, int frac, int width, flags_t flag
 	  exp+1,
 	  frac+4,
 	  sel_or_reg, exp, frac+1, frac+1,
-	  sel_or_reg, exp, frac+4,
+	  sel_or_reg, exp, frac+4, frac-2,
 	  sel_or_reg, exp, frac+4,
 	  sel_or_reg, width
 	  );
@@ -90,7 +90,7 @@ P_IF
 	  "relay B.normalize(As,\n"
 	  "Aexp,\n"
 	  "multi.do_in(Am1, Am2).out<%d:%d>,\n"
-	  "/|multi.out<%d:0>\n"
+	  "multi.out<%d:0>\n"
 	  ");\n"
 	  "}\n"
 	  "}\n"
@@ -103,7 +103,7 @@ P_ELSE
 	  "Bs = As;\n"
 	  "Bexp = Aexp;\n"
 	  "Bm = multi.do_in(Am1, Am2).out<%d:%d>;\n"
-	  "Bsticky = /|multi.out<%d:0>;\n"
+	  "Bsticky = multi.out<%d:0>;\n"
 	  "\n",
 	  (frac+1)*2 - 1, frac - 2,
 	  frac - 3
@@ -122,7 +122,7 @@ P_IF
 	  );
  fprintf(fp,
 	 "normalized_frac = Bm >> Bm<%d>;\n"
-	 "sticky = Bsticky | (Bm<%d>&Bm<0>);\n"
+	 "sticky = /|Bsticky | (Bm<%d>&Bm<0>);\n"
 	 "relay C.round(Bs, Bexp + Bm<%d>, normalized_frac<%d:0> || sticky);\n"
 	 "}\n"
 	 "}\n"
@@ -134,7 +134,7 @@ P_IF
 P_ELSE
  fprintf(fp,
 	 "normalized_frac = Bm >> Bm<%d>;\n"
-	 "sticky = Bsticky | (Bm<%d>&Bm<0>);\n"
+	 "sticky = /|Bsticky | (Bm<%d>&Bm<0>);\n"
 	 "Cs = Bs; Cexp = Bexp + Bm<%d>; Cm = normalized_frac<%d:0> || sticky;\n"
 	 "\n",
 	 frac+3,

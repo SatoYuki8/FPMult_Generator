@@ -3,13 +3,15 @@ OPT=-lm -Wall -O2
 GCC=gcc
 HEAD=src/mul_gen.h
 OBJ=src/main.o src/step_measurement.o src/arg_check.o src/sub_module_function.o src/fpmultiplier_generator.o
+_SRC=$@:.o=.c
+SRC=$($(_SRC))
 
 all:	comp
 
 comp:	$(OBJ)
 	$(GCC) -o $(BIN) $^ -lm -Wall -O2
 
-src/main.o:	src/main.c $(HEAD)
+src/main.o:	$(SRC) $(HEAD)
 src/main.c:
 	$(GCC) -c $@ $(OPT)
 
