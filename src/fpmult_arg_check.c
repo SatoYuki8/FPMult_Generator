@@ -6,7 +6,7 @@
 
 #include "mul_gen.h"
 
-FILE *arg_check(int argc, char **argv, efw_t f, flags_t flag, char *module_name){
+FILE *fpmult_arg_check(int argc, char **argv, efw_t f, flags_t flag, char *module_name){
   FILE *fp;
   int i;
   char output[64];

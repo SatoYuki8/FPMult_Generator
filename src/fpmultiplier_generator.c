@@ -148,7 +148,7 @@ P_END
 int fpmulti_round(FILE *fp, int frac, int width, flags_t flag){
   char tmp[16];
 P_IF
-  strcpy(tmp, "relay D.result");
+  strcpy(tmp, "result = ");
  fprintf(fp,
 	 "stage C{\n"
 	 "par{\n"
@@ -159,8 +159,8 @@ P_END
   
   fprintf(fp,
 	  "alt{\n"
-	  "(Cm<%d>|Cm<%d>): par{\n",
-	  frac + 3, frac + 2
+	  "(Cm<%d>): par{\n",
+	  frac + 3
 	  );
   fprintf(fp,
 	  "rounded_frac = incfrac.do_in((Cm<2>&(Cm<3>|Cm<1>|Cm<0>)), Cm<%d:3>).out;\n",
@@ -233,14 +233,10 @@ P_END
 P_IF
   fprintf(fp,
 	  "}\n"
-	  "}\n"
-	  "\n"
-	  "stage D{\n"
 	  );
-P_END
-  
+P_END  
+ 
   fprintf(fp,
-	  "result = out;\n"
 	  "}\n"
 	  "}\n\n"
 	  );

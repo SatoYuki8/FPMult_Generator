@@ -2,7 +2,7 @@ BIN=gen
 OPT=-lm -Wall -O2
 GCC=gcc
 HEAD=src/mul_gen.h
-OBJ=src/main.o src/step_measurement.o src/arg_check.o src/sub_module_function.o src/fpmultiplier_generator.o
+OBJ=src/main.o src/fpmult_step_measurement.o src/fpmult_arg_check.o src/fpmult_sub_module_function.o src/fpmultiplier_generator.o
 _SRC=$@:.o=.c
 SRC=$($(_SRC))
 
@@ -15,16 +15,16 @@ src/main.o:	$(SRC) $(HEAD)
 src/main.c:
 	$(GCC) -c $@ $(OPT)
 
-src/step_measurement.o:	src/step_measurement.c $(HEAD)
-src/step_measurement.c:
+src/fpmult_step_measurement.o:	src/fpmult_step_measurement.c $(HEAD)
+src/fpmult_step_measurement.c:
 	$(GCC) -c $@ $(OPT)
 
-src/arg_check.o: src/arg_check.c $(HEAD)
-src/arg_check.c:
+src/fpmult_arg_check.o: src/fpmult_arg_check.c $(HEAD)
+src/fpmult_arg_check.c:
 	$(GCC) -c $@ $(OPT)
 
-src/sub_module_function.o:	src/sub_module_function.c $(HEAD)
-src/sub_module_function.c:
+src/fpmult_sub_module_function.o:	src/fpmult_sub_module_function.c $(HEAD)
+src/fpmult_sub_module_function.c:
 	$(GCC) -c $@ $(OPT)
 
 src/fpmultiplier_generator.o:	src/fpmultiplier_generator.c $(HEAD)

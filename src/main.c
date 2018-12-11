@@ -96,17 +96,17 @@ int Manage_FPMult_Generator(int argc, char **argv){
   init_flags(flag);
 
   /* Argument check */
-  fp = arg_check(argc, argv, f, flag, module_name);
+  fp = fpmult_arg_check(argc, argv, f, flag, module_name);
   if (fp == ERROR) return ERROR;
 
   /* FPMultiplier_generator */
   if (flag->fpmulti_flag == 1) FPMultiplier_Generator(fp, f, flag, module_name);
 
   /* Step measurement */
-  if (flag->step1_flag == 1) step_measurement(fp, f, flag, module_name);
-  else if (flag->step2_flag == 1) step_measurement(fp, f, flag, module_name);
-  else if (flag->step3_flag == 1) step_measurement(fp, f, flag, module_name);
-  else if (flag->step4_flag == 1) step_measurement(fp, f, flag, module_name);
+  if (flag->step1_flag == 1) fpmult_step_measurement(fp, f, flag, module_name);
+  else if (flag->step2_flag == 1) fpmult_step_measurement(fp, f, flag, module_name);
+  else if (flag->step3_flag == 1) fpmult_step_measurement(fp, f, flag, module_name);
+  else if (flag->step4_flag == 1) fpmult_step_measurement(fp, f, flag, module_name);
   
   /* Wrapper Generator */
   if(flag->wrapper_flag == 1) Wrapper_Generator(fp, f, module_name);

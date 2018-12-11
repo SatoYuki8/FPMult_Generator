@@ -40,7 +40,7 @@ typedef _flags_t flags_t[1];
 #define P_END }
 
 //step_measurement.c
-int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module);
+int fpmult_step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module);
 
 //main.c
 void init_flags(flags_t flag);
@@ -48,7 +48,7 @@ void help_message();
 int Wrapper_Generator(FILE *fp, const efw_t f, char *module_name);
 int Manage_FPMult_Generator(int argc, char **argv);
 
-FILE *arg_check(int argc, char **argv, efw_t f, flags_t flag, char *module_name);
+FILE *fpmult_arg_check(int argc, char **argv, efw_t f, flags_t flag, char *module_name);
 int IncFrac_Generator(FILE *fp, const int frac, char *name);
 int Long_Division(FILE *fp, const int frac, char *name);
 int Multiplier_Generator(FILE *fp, const int frac, flags_t flag, char *name);

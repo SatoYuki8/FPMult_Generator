@@ -5,7 +5,7 @@
 
 #include "mul_gen.h"
 
-int step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
+int fpmult_step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module){
   int exp = f->exp;
   int frac= f->frac;
   int width=f->width;
