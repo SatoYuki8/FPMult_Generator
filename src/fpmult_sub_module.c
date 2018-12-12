@@ -1,7 +1,7 @@
 
 #include "mul_gen.h"
 
-int IncFrac_Generator(FILE *fp, const int frac, char *name){
+int IncreaseFrac(FILE *fp, const int frac, char *name){
   sprintf(name, "IncreaseFrac_%d", frac);
   //Header
   fprintf(fp,

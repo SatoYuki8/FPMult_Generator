@@ -2,7 +2,7 @@ BIN=gen
 OPT=-lm -Wall -O2
 GCC=gcc
 HEAD=src/mul_gen.h
-OBJ=src/main.o src/fpmult_step_measurement.o src/fpmult_arg_check.o src/fpmult_sub_module_function.o src/fpmultiplier_generator.o
+OBJ=src/main.o src/fpmult_step_measurement.o src/fpmult_arg_check.o src/fpmult_sub_module.o src/fpmult_generator.o
 _SRC=$@:.o=.c
 SRC=$($(_SRC))
 
@@ -23,12 +23,12 @@ src/fpmult_arg_check.o: src/fpmult_arg_check.c $(HEAD)
 src/fpmult_arg_check.c:
 	$(GCC) -c $@ $(OPT)
 
-src/fpmult_sub_module_function.o:	src/fpmult_sub_module_function.c $(HEAD)
-src/fpmult_sub_module_function.c:
+src/fpmult_sub_module.o:	src/fpmult_sub_module.c $(HEAD)
+src/fpmult_sub_module.c:
 	$(GCC) -c $@ $(OPT)
 
-src/fpmultiplier_generator.o:	src/fpmultiplier_generator.c $(HEAD)
-src/fpmultiplier_generator.c:
+src/fpmult_generator.o:	src/fpmult_generator.c $(HEAD)
+src/fpmult_generator.c:
 	$(GCC) -c $@ $(OPT)
 
 exec:

@@ -49,7 +49,7 @@ int Wrapper_Generator(FILE *fp, const efw_t f, char *module_name);
 int Manage_FPMult_Generator(int argc, char **argv);
 
 FILE *fpmult_arg_check(int argc, char **argv, efw_t f, flags_t flag, char *module_name);
-int IncFrac_Generator(FILE *fp, const int frac, char *name);
+int IncreaseFrac(FILE *fp, const int frac, char *name);
 int Long_Division(FILE *fp, const int frac, char *name);
 int Multiplier_Generator(FILE *fp, const int frac, flags_t flag, char *name);
 int FPMultiplier_Generator(FILE *fp, const efw_t f, flags_t flag, char *module_name);

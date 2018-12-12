@@ -1,4 +1,10 @@
 -------------------------------------------------------------
+12/12
+ファイル名と関数名を変更
+  IncFrac_Generator --> IncreaseFrac
+  fpmult_sub_module_function.c --> fpmult_sub_module.c
+  fpmultiplier_generator.c --> fpmult_generator.c 
+
 -------------------------------------------------------------
 12/11
 丸めでのalt文の条件を仮数部の最上位だけをみるように変更

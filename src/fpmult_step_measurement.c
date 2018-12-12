@@ -218,7 +218,7 @@ int fpmult_step_measurement(FILE *fp, const efw_t f, flags_t flag, char *module)
   }else if(flag->step4_flag == 1){
     char incfrac[64];
     
-    IncFrac_Generator(fp, frac, incfrac);
+    IncreaseFrac(fp, frac, incfrac);
     fprintf(fp,
 	    "circuit %s{\n"
 	    "    instrin do_in;\n"

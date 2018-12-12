@@ -189,7 +189,7 @@ int FPMultiplier_Generator(FILE *fp, const efw_t f, flags_t flag, char *module_n
   char sel_or_reg[8] = "sel";
   
   /* Sub module */
-  IncFrac_Generator(fp, frac, incfrac_module);
+  IncreaseFrac(fp, frac, incfrac_module);
   Multiplier_Generator(fp, frac, flag, multi_module);
   /**************/
 
